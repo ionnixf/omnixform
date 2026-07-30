@@ -39,7 +39,7 @@ class VectorAdapter(BaseAdapter):
 
             self._cairosvg_available = True
             return True
-        except ImportError:
+        except (ImportError, OSError):
             self._cairosvg_available = False
             return False
 
@@ -56,15 +56,16 @@ class VectorAdapter(BaseAdapter):
                 import cairosvg  # noqa: F401
 
                 self._cairosvg_available = True
-            except ImportError:
+            except (ImportError, OSError) as exc:
                 raise MissingDependencyError(
                     "cairosvg",
                     install_hint=(
-                        "Install CairoSVG for vector conversion:\n"
+                        "Install CairoSVG and its native Cairo library for vector conversion:\n"
                         "  pip install cairosvg\n"
-                        "  or: pip install omnixform[all-formats]"
+                        "  or: pip install omnixform[all-formats]\n"
+                        f"Runtime import error: {exc}"
                     ),
-                )
+                ) from exc
 
         target_format = normalize_format(target_format)
         source_ext = os.path.splitext(input_path)[1].lstrip(".").lower()

@@ -5,7 +5,7 @@ import json
 import os
 import sys
 import time
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from rich import box
@@ -315,7 +315,7 @@ def version(
 @app.command(name="convert")
 def convert(
     ctx: typer.Context,
-    input_path: str = typer.Argument(..., help="Path to input file or glob pattern"),
+    input_path: Annotated[list[str], typer.Argument(help="Input file path(s) or glob pattern(s)")],
     to: str = typer.Option(..., "--to", help="Target format"),
     output: str | None = typer.Option(None, "-o", "--output", help="Explicit output path (single file only)"),
     output_dir: str | None = typer.Option(None, "--output-dir", help="Output directory"),
@@ -408,12 +408,17 @@ def convert(
                     if key != "format" and key not in options:
                         options[key] = val
 
-    # Check if input is a glob pattern
-    has_glob = any(c in input_path for c in "*?[")
-    input_files = glob.glob(input_path) if has_glob else [input_path]
+    # Expand patterns ourselves on POSIX. On Windows, the process runtime may
+    # expand wildcards before Typer sees them, so accepting multiple positional
+    # paths keeps the same command portable.
+    input_files: list[str] = []
+    for candidate in input_path:
+        has_glob = any(c in candidate for c in "*?[")
+        matches = glob.glob(candidate) if has_glob else [candidate]
+        input_files.extend(matches)
 
     if not input_files:
-        _error_exit(f"No files match pattern: {input_path}", EXIT_FILE_NOT_FOUND)
+        _error_exit(f"No files match input: {', '.join(input_path)}", EXIT_FILE_NOT_FOUND)
 
     if len(input_files) > 1 and output:
         _error_exit("Cannot use --output with multiple input files", EXIT_BAD_ARGS)
@@ -556,7 +561,7 @@ def convert(
 @app.command()
 def batch(
     ctx: typer.Context,
-    pattern: str = typer.Argument(..., help="Glob pattern matching input files"),
+    pattern: Annotated[list[str], typer.Argument(help="Glob pattern(s) or input file path(s)")],
     to: str = typer.Option(..., "--to", help="Target format"),
     output_dir: str | None = typer.Option(None, "--output-dir", help="Output directory"),
     overwrite: bool = typer.Option(False, "--overwrite", help="Allow overwriting existing files"),

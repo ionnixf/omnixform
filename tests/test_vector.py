@@ -2,13 +2,30 @@
 
 from __future__ import annotations
 
+import builtins
 from pathlib import Path
+from typing import Any
 
 import pytest
 from PIL import Image
 
 from omnixform.adapters.vector import VectorAdapter
 from omnixform.errors import ConversionError
+
+
+def test_native_cairo_load_error_marks_adapter_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_import = builtins.__import__
+
+    def import_without_native_cairo(name: str, *args: Any, **kwargs: Any) -> Any:
+        if name == "cairosvg":
+            raise OSError("native Cairo library is unavailable")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", import_without_native_cairo)
+
+    assert VectorAdapter().is_available() is False
 
 
 @pytest.mark.integration

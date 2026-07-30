@@ -41,8 +41,8 @@ No account, package, container, tag, or release was created by these checks.
 
 ## Local validation summary
 
-- Python 3.11.15: Ruff lint and format, strict mypy, 166 collected tests,
-  **163 passed and 3 skipped** because Pandoc and LibreOffice were absent on
+- Python 3.11.15: Ruff lint and format, strict mypy, 168 collected tests,
+  **165 passed and 3 skipped** because Pandoc and LibreOffice were absent on
   the host.
 - Coverage: **67%** overall.
 - Host integrations: FFmpeg 8.1.2 and optional Pillow/CairoSVG conversions
@@ -202,6 +202,24 @@ No account, package, container, tag, or release was created by these checks.
   error instead of attempting a known-unavailable conversion.
 - Regression test: **Required and present.**
 - Status: **Resolved.**
+
+### AUD-010 — Optional Cairo runtime and Windows argument portability
+
+- Severity: **Medium**
+- Files: `src/omnixform/adapters/vector.py`, `src/omnixform/cli.py`, tests,
+  `.github/workflows/ci.yml`
+- Confirmation: the first hosted run passed Linux 3.11–3.14 but failed on
+  macOS and Windows. CairoSVG could be importable while its native Cairo
+  library was absent, raising an uncaught `OSError`. Windows also expanded a
+  wildcard into multiple positional paths before Typer parsed the command.
+- Impact: read-only CLI commands could crash on platforms without native Cairo,
+  and otherwise valid batch conversion could be rejected on Windows.
+- Resolution: native Cairo load failures mark the adapter unavailable; convert
+  and batch accept one or more input paths or patterns; path and newline tests
+  are platform-neutral. Actions were advanced to current, full-SHA-pinned
+  Node.js 24 releases after the hosted runner reported Node.js 20 deprecation.
+- Regression test: **Required and present.**
+- Status: **Resolved locally; hosted rerun pending.**
 
 ### AUD-018 — Temporary `pictures/` corpus
 

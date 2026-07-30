@@ -499,6 +499,25 @@ class TestBatchCommand:
             assert os.path.isfile(os.path.join(tmp, "converted", "one.webp"))
             assert os.path.isfile(os.path.join(tmp, "converted", "two.webp"))
 
+    def test_expanded_paths_are_accepted(self) -> None:
+        with TempDir() as tmp:
+            one = create_test_image(os.path.join(tmp, "one.png"))
+            two = create_test_image(os.path.join(tmp, "two.png"))
+
+            result = run_omnixform(
+                "batch",
+                one,
+                two,
+                "--to",
+                "webp",
+                "--output-dir",
+                os.path.join(tmp, "converted"),
+            )
+
+            assert result.returncode == 0
+            assert os.path.isfile(os.path.join(tmp, "converted", "one.webp"))
+            assert os.path.isfile(os.path.join(tmp, "converted", "two.webp"))
+
 
 # ── Scenario 24: Exit codes ────────────────────────────────────────────────
 

@@ -31,18 +31,23 @@ class TestReplaceExtension:
 
 
 class TestResolveOutputPath:
-    def test_default_derived(self) -> None:
-        path, exists = resolve_output_path("/tmp/test.png", "webp")
-        assert path == "/tmp/test.webp"
+    def test_default_derived(self, tmp_path: Path) -> None:
+        source = tmp_path / "test.png"
+        path, exists = resolve_output_path(str(source), "webp")
+        assert path == str(tmp_path / "test.webp")
         assert not exists
 
-    def test_output_override(self) -> None:
-        path, exists = resolve_output_path("/tmp/test.png", "webp", output="/tmp/out.webp")
-        assert path == "/tmp/out.webp"
+    def test_output_override(self, tmp_path: Path) -> None:
+        source = tmp_path / "test.png"
+        output = tmp_path / "out.webp"
+        path, exists = resolve_output_path(str(source), "webp", output=str(output))
+        assert path == str(output)
 
-    def test_output_dir(self) -> None:
-        path, exists = resolve_output_path("/tmp/test.png", "webp", output_dir="/other")
-        assert path == "/other/test.webp"
+    def test_output_dir(self, tmp_path: Path) -> None:
+        source = tmp_path / "test.png"
+        output_dir = tmp_path / "other"
+        path, exists = resolve_output_path(str(source), "webp", output_dir=str(output_dir))
+        assert path == str(output_dir / "test.webp")
 
     def test_existing_file(self) -> None:
         with TempDir() as tmp:

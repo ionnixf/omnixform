@@ -19,7 +19,7 @@ def test_sync_subprocess_captures_output() -> None:
     )
 
     assert result.returncode == 0
-    assert result.stdout == b"ok\n"
+    assert result.stdout.splitlines() == [b"ok"]
     assert result.stderr == b""
 
 
