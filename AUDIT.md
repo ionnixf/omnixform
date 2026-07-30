@@ -23,12 +23,12 @@ Technical namespace screening does not reserve a name and is not legal advice.
 
 | Namespace | Result | Evidence on 2026-07-30 | Risk |
 | --- | --- | --- | --- |
-| PyPI | Available candidate | `GET https://pypi.org/pypi/omnixform/json` returned 404 | Could be claimed before publication |
-| TestPyPI | Available candidate | `GET https://test.pypi.org/pypi/omnixform/json` returned 404 | Could be claimed independently |
-| GitHub | Owner repository exists | Exact-name search found only `ionnixf/omnixform`; repository API returned 200 and an empty `main` repository | Repository ownership and access must still be verified by push |
+| PyPI | Available candidate | `GET https://pypi.org/pypi/omnixform/json` returned 404 on 2026-07-30 | Could be claimed before publication |
+| TestPyPI | Available candidate | `GET https://test.pypi.org/pypi/omnixform/json` returned 404 on 2026-07-30 | Could be claimed independently |
+| GitHub | Owner repository exists | Repository API returned 200 for public `ionnixf/omnixform`; source push and hosted CI succeeded | Repository namespace is controlled by the owner |
 | npm | Available candidate | `GET https://registry.npmjs.org/omnixform` returned 404 | Unrelated ecosystem; not reserved |
-| crates.io | Available candidate | crates.io API reported that the crate does not exist | Unrelated ecosystem; not reserved |
-| Docker Hub | Available candidate | Exact repository lookup/search returned no result | Does not reserve the proposed GHCR name |
+| crates.io | Available candidate | crates.io API returned 404 and reported that the crate does not exist on 2026-07-30 | Unrelated ecosystem; not reserved |
+| Docker Hub | Available candidate | Exact `ionnixf/omnixform` repository lookup returned 404 on 2026-07-30 | Does not reserve the proposed GHCR name |
 | GHCR | Unclear | Anonymous tags request required authentication | Confirm immediately before container publication |
 | Homebrew | Available candidate | Exact formula and cask API lookups returned 404 | Formula names are not reserved |
 | Web search | No direct technical conflict found | Exact searches for `Omnixform`, `omnixform`, and `OmniXform` found no active file/media/document conversion product | Similar “Omnix” names exist in unrelated fields |
@@ -41,14 +41,17 @@ No account, package, container, tag, or release was created by these checks.
 
 ## Local validation summary
 
-- Python 3.11.15: Ruff lint and format, strict mypy, 169 collected tests,
-  **166 passed and 3 skipped** because Pandoc and LibreOffice were absent on
+- Python 3.11.15: Ruff lint and format, strict mypy, 179 collected tests,
+  **176 passed and 3 skipped** because Pandoc and LibreOffice were absent on
   the host.
 - Coverage: **70%** overall.
 - Host integrations: FFmpeg 8.1.2 and optional Pillow/CairoSVG conversions
   passed.
 - Documentation: `mkdocs build --strict` passed.
 - Packaging: isolated wheel and sdist builds and strict Twine checks passed.
+- Release gate: source/tag/version/document consistency, archive path/content
+  inspection, and clean-install stages are enforced before the OIDC publish
+  job. `actionlint` 1.7.7 passed both workflows.
 - Clean installs: wheel and sdist installed in independent Python 3.11
   environments; both passed `pip check`, metadata, import, version, help, and
   conversion scenarios.
@@ -60,16 +63,22 @@ No account, package, container, tag, or release was created by these checks.
   local distribution itself was skipped).
 - Credential scan: `detect-secrets` reported zero candidates in the source
   tree.
-- Container: final no-cache Podman build passed; UID 1000 runtime, help/version,
+- Container: final no-cache Podman build from the pinned base digest passed;
+  UID 1000 runtime and help/version smoke tests passed. Earlier audited
   Pandoc Markdown-to-DOCX, LibreOffice DOCX-to-PDF, and FFmpeg WAV-to-MP3
-  conversions passed.
+  conversions also passed in the same container definition.
 - Hosted CI: run
-  `https://github.com/ionnixf/omnixform/actions/runs/30562203149` passed all
+  `https://github.com/ionnixf/omnixform/actions/runs/30562522583` passed all
   Linux 3.11–3.14, macOS 3.11, Windows 3.11, external integration, package,
-  and container jobs for commit `1e89fb7832b9b09aa265de708ba9d284e59fbcf3`.
+  and container jobs for commit `1c462be99a51b65f9b49110896dec9686e068eea`.
 - Artifacts: archive names and extracted content contain no stale package name,
   temporary media corpus, caches, VCS data, local absolute paths, or detected
   secrets.
+- Final local candidate artifacts built with `SOURCE_DATE_EPOCH=1767225600`:
+  wheel SHA-256
+  `262365d50270c26488ff78f013fcbb660775696539942cd9493344e646c2a62e`;
+  sdist SHA-256
+  `b2cb5fa4c7ee09e61c80e4d999b4852a0d29e910c1aee1c8f430c97b701cf15b`.
 
 ## Git and version review
 
@@ -239,6 +248,55 @@ No account, package, container, tag, or release was created by these checks.
 - Regression test: source and artifact scans.
 - Status: **Resolved.**
 
+### AUD-019 — Manual PyPI workflow accepted branch refs
+
+- Severity: **High**
+- Files: `.github/workflows/publish-pypi.yml`,
+  `scripts/release_preflight.py`, `scripts/inspect_distributions.py`
+- Confirmation: selecting the publish confirmation on `workflow_dispatch`
+  previously allowed the build and OIDC publication job to proceed from a
+  branch ref; the workflow did not bind the ref, source version, changelog, and
+  artifact metadata to one exact release.
+- Impact: an operator mistake could publish an untagged or incorrectly
+  versioned source tree.
+- Resolution: publication now fails closed unless it runs from exact tag
+  `v<version>`, the runtime version matches, release documents are finalized,
+  the tag points at `HEAD`, and wheel/sdist paths and metadata pass an archive
+  inspector. Independent clean wheel and sdist installs run before OIDC is
+  granted to the separate publish job.
+- Regression test: **Required and present.**
+- Status: **Resolved in source; hosted CI for this commit remains required.**
+
+### AUD-020 — Mutable container base image
+
+- Severity: **Medium**
+- Files: `Dockerfile`, `.github/dependabot.yml`
+- Confirmation: both build stages used the mutable `python:3.11-slim` tag.
+- Impact: upstream tag movement could silently change the build input and make
+  incident reconstruction harder.
+- Resolution: both stages use the same verified multi-platform manifest digest
+  (`sha256:db3ff2e1800a8581e2c48a27c3995339d47bdf046da21c7627accd3d51053a93`);
+  Docker Dependabot updates are enabled.
+- Regression test: no-cache container build plus digest/source review.
+- Status: **Resolved for the base image. Debian packages remain mutable and are
+  documented as a reproducibility limitation.**
+
+### AUD-021 — Required external repository controls are absent or unverified
+
+- Severity: **High**
+- Files: `SECURITY.md`, `RELEASE_CHECKLIST.md`, repository settings
+- Confirmation: GitHub's public environments API returned `total_count: 0`;
+  unauthenticated APIs cannot confirm branch protection, Actions policy, or
+  private vulnerability reporting.
+- Impact: the source workflow names environment `pypi`, but without creating
+  and protecting it there is no reviewer gate before OIDC publication.
+- Recommendation: create a protected `pypi` environment with required reviewer
+  and tag deployment restrictions, configure the matching PyPI trusted
+  publisher, enable private vulnerability reporting, and review default-branch
+  and Actions restrictions before tagging.
+- Regression test: external settings review immediately before release.
+- Status: **Open; requires owner-controlled GitHub/PyPI settings.**
+
 ## Product claims
 
 | Claim | Status | Evidence |
@@ -256,7 +314,7 @@ No account, package, container, tag, or release was created by these checks.
 | Dockerfile | Conditional | Local no-cache build and non-root smoke when Podman/Docker is available |
 | PyPI package | Not published | Namespace and artifact checks only |
 | MkDocs documentation | Confirmed locally | Strict build |
-| Linux/macOS/Windows CI | Confirmed for audited source | Hosted run `30562203149` passed every job |
+| Linux/macOS/Windows CI | Confirmed for audited base source | Hosted run `30562522583` passed every job; the hardening commit still requires hosted CI |
 
 ## Security regression checklist
 
@@ -271,7 +329,11 @@ No account, package, container, tag, or release was created by these checks.
 - [x] CLI errors return non-zero status and JSON remains parseable.
 - [x] Plugin discovery and failure isolation are tested.
 - [x] GitHub Actions have minimal permissions and pinned revisions.
+- [x] Dispatch inputs reach shell steps only through environment variables.
+- [x] PyPI publication is bound to an exact tag/version and finalized release
+      documents.
 - [x] Container runtime is configured as non-root.
+- [x] Container base image is pinned by digest and covered by Dependabot.
 - [x] Source and artifact secret scans are part of release verification.
 
 ## Rename checklist
@@ -295,8 +357,12 @@ No account, package, container, tag, or release was created by these checks.
 1. Repeat hosted CI on the eventual release commit before creating a tag.
 2. Complete human review of subprocess, path-publication, plugin, workflow, and
    container code.
-3. Configure the PyPI trusted publisher and protected environment.
-4. Repeat the exact PyPI namespace check immediately before publication.
-5. Obtain separate owner permission for tag, GitHub Release, PyPI publication,
+3. Create and protect the `pypi` GitHub environment, then configure the exact
+   PyPI trusted-publisher binding.
+4. Enable or verify GitHub private vulnerability reporting and review
+   default-branch/Actions protections.
+5. Finalize the changelog/release-note date only when the release is approved.
+6. Repeat the exact PyPI namespace check immediately before publication.
+7. Obtain separate owner permission for tag, GitHub Release, PyPI publication,
    and container publication.
-6. Treat trademark clearance as a separate legal decision.
+8. Treat trademark clearance as a separate legal decision.

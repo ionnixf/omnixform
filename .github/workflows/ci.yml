@@ -108,7 +108,9 @@ jobs:
       - name: Build wheel and sdist
         run: python -m build
       - name: Check package metadata
-        run: twine check --strict dist/*
+        run: |
+          twine check --strict dist/*
+          python scripts/inspect_distributions.py --expected-version 0.1.0
       - name: Upload distributions
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

@@ -12,10 +12,15 @@ first public release.
 - [x] Version metadata and release documents use `0.1.0`.
 - [x] Project policy files and GitHub templates are present.
 - [x] No compatibility package or deprecated command was added.
+- [x] PyPI workflow rejects branch refs, mismatched tags/versions, unfinished
+      release documents, and uninspected distributions.
+- [x] Container base image is pinned to an immutable multi-platform digest and
+      covered by Dependabot.
 - [ ] Human review of security-critical subprocess, path, plugin, workflow, and
       container changes.
-- [ ] Reconfirm hosted CI on Linux, macOS, and Windows for the exact release
-      commit (audit run `30562203149` passed for the reviewed source).
+- [x] Hosted CI on Linux, macOS, and Windows passed for audited commit
+      `1c462be99a51b65f9b49110896dec9686e068eea` (run `30562522583`).
+- [ ] Reconfirm hosted CI for the eventual tagged release commit.
 
 ## Local verification
 
@@ -30,6 +35,7 @@ first public release.
 - [x] Installed CLI help/version and user-scenario smoke tests
 - [x] Installed third-party plugin discovery and conversion
 - [x] Wheel/sdist content inspection
+- [x] Automated distribution inspection is enforced before PyPI publication
 - [x] Dependency vulnerability audit
 - [x] Secret and generated-artifact scans
 - [x] No-cache container build and non-root smoke test
@@ -39,8 +45,12 @@ first public release.
 ## Publication checkpoints
 
 - [ ] Confirm the `omnixform` PyPI namespace immediately before release.
-- [ ] Configure and review PyPI trusted publishing for the protected `pypi`
-      GitHub environment.
+- [ ] Create and protect the `pypi` GitHub environment (the read-only API
+      reported no environments on 2026-07-30).
+- [ ] Configure and review PyPI trusted publishing for that environment.
+- [ ] Enable or verify GitHub private vulnerability reporting.
+- [ ] Replace `Unreleased` with the actual release date/status in
+      `CHANGELOG.md` and `RELEASE_NOTES.md`.
 - [ ] Obtain explicit owner permission to create and push tag `v0.1.0`.
 - [ ] Obtain explicit owner permission to create a GitHub Release.
 - [ ] Obtain explicit owner permission to publish to PyPI.

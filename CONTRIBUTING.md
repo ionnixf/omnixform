@@ -40,6 +40,7 @@ pytest -m integration
 pytest --cov=omnixform --cov-report=term-missing
 python -m build
 twine check --strict dist/*
+python scripts/inspect_distributions.py --expected-version 0.1.0
 mkdocs build --strict
 ```
 

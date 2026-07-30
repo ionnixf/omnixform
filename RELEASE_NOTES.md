@@ -28,10 +28,17 @@ CLI alias. The initial public contracts are:
 ## Known limitations
 
 - PyPI and the container image have not been published.
-- Hosted CI must pass on Linux, macOS, and Windows before release.
+- Cross-platform hosted CI passed for the audited source commit; it must run
+  again for the eventual tagged release commit.
+- The required protected GitHub environment and PyPI trusted-publisher binding
+  are not configured yet.
 - External converters and plugins are not sandboxed.
 - Format and codec availability varies by platform and installed tools.
 - Pandoc PDF output may need an additional PDF engine.
 - Built-in markup and structured-data conversions can be lossy.
-- Container operating-system packages are not bit-for-bit reproducible.
+- The container base image is digest-pinned, but Debian packages installed
+  during the build are not version-locked or bit-for-bit reproducible.
+- Portable process-group termination on Windows remains dependent on converter
+  behavior; hostile inputs should be handled in an OS sandbox or disposable
+  container/VM.
 - Trademark clearance was not performed.

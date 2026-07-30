@@ -3,6 +3,10 @@ name: Publish to PyPI
 on:
   workflow_dispatch:
     inputs:
+      version:
+        description: Exact package version and tag suffix (for example, 0.1.0)
+        required: true
+        type: string
       confirmation:
         description: Select the explicit publication checkpoint
         required: true
@@ -16,7 +20,10 @@ permissions:
 
 env:
   PYTHONHASHSEED: "0"
-  SOURCE_DATE_EPOCH: "1767225600"
+
+concurrency:
+  group: publish-pypi-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -24,10 +31,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
           cache: pip
+      - name: Enforce tagged release source
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+        run: |
+          python scripts/release_preflight.py \
+            --expected-version "$RELEASE_VERSION" \
+            --ref-type "$RELEASE_REF_TYPE" \
+            --tag "$RELEASE_REF_NAME"
+          test "$(git tag --points-at HEAD)" = "v$RELEASE_VERSION"
+          echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
       - name: Install verification and build tools
         run: python -m pip install -e ".[dev,all-formats,docs]" build twine
       - name: Verify source
@@ -37,19 +58,45 @@ jobs:
           mypy src tests --python-version 3.11
           pytest -m "not integration"
           mkdocs build --strict
-      - run: python -m build
-      - run: twine check --strict dist/*
+      - name: Build distributions
+        run: python -m build
+      - name: Inspect and check distributions
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          twine check --strict dist/*
+          python scripts/inspect_distributions.py \
+            --expected-version "$RELEASE_VERSION"
+      - name: Verify clean wheel installation
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python -m venv /tmp/omnixform-wheel
+          /tmp/omnixform-wheel/bin/python -m pip install dist/*.whl
+          /tmp/omnixform-wheel/bin/python -m pip check
+          test "$(/tmp/omnixform-wheel/bin/omnix --version)" = "Omnixform $RELEASE_VERSION"
+          /tmp/omnixform-wheel/bin/omnix --help
+      - name: Verify clean sdist installation
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python -m venv /tmp/omnixform-sdist
+          /tmp/omnixform-sdist/bin/python -m pip install dist/*.tar.gz
+          /tmp/omnixform-sdist/bin/python -m pip check
+          test "$(/tmp/omnixform-sdist/bin/omnix --version)" = "Omnixform $RELEASE_VERSION"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: python-distributions
           path: dist/*
           if-no-files-found: error
+          retention-days: 7
 
   publish:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: pypi
+      url: https://pypi.org/p/omnixform
     permissions:
       id-token: write
     steps:
