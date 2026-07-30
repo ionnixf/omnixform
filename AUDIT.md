@@ -68,9 +68,10 @@ No account, package, container, tag, or release was created by these checks.
   Pandoc Markdown-to-DOCX, LibreOffice DOCX-to-PDF, and FFmpeg WAV-to-MP3
   conversions also passed in the same container definition.
 - Hosted CI: run
-  `https://github.com/ionnixf/omnixform/actions/runs/30562522583` passed all
+  `https://github.com/ionnixf/omnixform/actions/runs/30566767178` passed all
   Linux 3.11–3.14, macOS 3.11, Windows 3.11, external integration, package,
-  and container jobs for commit `1c462be99a51b65f9b49110896dec9686e068eea`.
+  and container jobs for hardening commit
+  `eb6e0db3d4fc3e62b4c85c4b4b7d08169c04ccd6`.
 - Artifacts: archive names and extracted content contain no stale package name,
   temporary media corpus, caches, VCS data, local absolute paths, or detected
   secrets.
@@ -265,7 +266,7 @@ No account, package, container, tag, or release was created by these checks.
   inspector. Independent clean wheel and sdist installs run before OIDC is
   granted to the separate publish job.
 - Regression test: **Required and present.**
-- Status: **Resolved in source; hosted CI for this commit remains required.**
+- Status: **Resolved and confirmed by hosted CI.**
 
 ### AUD-020 — Mutable container base image
 
@@ -314,7 +315,7 @@ No account, package, container, tag, or release was created by these checks.
 | Dockerfile | Conditional | Local no-cache build and non-root smoke when Podman/Docker is available |
 | PyPI package | Not published | Namespace and artifact checks only |
 | MkDocs documentation | Confirmed locally | Strict build |
-| Linux/macOS/Windows CI | Confirmed for audited base source | Hosted run `30562522583` passed every job; the hardening commit still requires hosted CI |
+| Linux/macOS/Windows CI | Confirmed for audited hardening source | Hosted run `30566767178` passed every job for `eb6e0db3d4fc3e62b4c85c4b4b7d08169c04ccd6` |
 
 ## Security regression checklist
 
