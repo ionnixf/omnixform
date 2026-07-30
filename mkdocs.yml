@@ -1,0 +1,28 @@
+site_name: Omnixform
+site_description: Verified documentation for the Omnixform CLI converter
+site_author: Omnixform Contributors
+copyright: Copyright &copy; 2026 Omnixform Contributors
+
+theme:
+  name: readthedocs
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - fenced_code
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick start: quickstart.md
+  - Commands:
+      - Convert: commands/convert.md
+  - Formats: formats/overview.md
+  - Plugins: advanced/plugins.md
+  - Security: security.md

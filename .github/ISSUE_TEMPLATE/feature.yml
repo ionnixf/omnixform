@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a scoped enhancement or format
+title: "feature: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Include CLI/API compatibility and dependency implications.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety and maintenance
+      options:
+        - label: I identified any external program, parser, codec, or plugin dependency.
+          required: true
+        - label: I am not relying on unpublished benchmark or superiority claims.
+          required: true

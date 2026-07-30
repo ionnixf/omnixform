@@ -1,0 +1,14 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include SECURITY.md
+include RELEASE_CHECKLIST.md
+include RELEASE_NOTES.md
+include Makefile
+include Dockerfile
+include mkdocs.yml
+recursive-include docs *.md
+recursive-include tests *.py
+recursive-include benchmarks *.py
