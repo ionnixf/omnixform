@@ -835,7 +835,7 @@ def doctor(
             status = "pass"
             value = "installed"
             message = ""
-        except ImportError:
+        except (ImportError, OSError):
             status = "warn"
             value = "not found"
             message = f"{purpose} — install omnixform[all-formats]"

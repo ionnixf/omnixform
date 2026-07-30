@@ -9,8 +9,12 @@ import json
 import os
 import subprocess
 import sys
+from typing import Any
 
 import pytest
+from typer.testing import CliRunner
+
+import omnixform.cli as cli_module
 
 from .fixtures import (
     TempDir,
@@ -378,6 +382,29 @@ class TestDoctor:
         data = json.loads(result.stdout)
         assert "healthy" in data
         assert "checks" in data
+
+    def test_native_cairo_load_error_is_reported_as_optional(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import importlib
+
+        real_import_module = importlib.import_module
+
+        def import_without_native_cairo(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name == "cairosvg":
+                raise OSError("native Cairo library is unavailable")
+            return real_import_module(name, *args, **kwargs)
+
+        monkeypatch.setattr(importlib, "import_module", import_without_native_cairo)
+        monkeypatch.setattr(cli_module, "_json_output", False)
+
+        result = CliRunner().invoke(cli_module.app, ["--json", "doctor"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        cairo = next(item for item in payload["checks"] if item["check"] == "Optional: CairoSVG")
+        assert cairo["status"] == "warn"
 
 
 # ── Scenario 19: Paths with spaces and Unicode ──────────────────────────

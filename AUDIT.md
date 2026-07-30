@@ -41,10 +41,10 @@ No account, package, container, tag, or release was created by these checks.
 
 ## Local validation summary
 
-- Python 3.11.15: Ruff lint and format, strict mypy, 168 collected tests,
-  **165 passed and 3 skipped** because Pandoc and LibreOffice were absent on
+- Python 3.11.15: Ruff lint and format, strict mypy, 169 collected tests,
+  **166 passed and 3 skipped** because Pandoc and LibreOffice were absent on
   the host.
-- Coverage: **67%** overall.
+- Coverage: **70%** overall.
 - Host integrations: FFmpeg 8.1.2 and optional Pillow/CairoSVG conversions
   passed.
 - Documentation: `mkdocs build --strict` passed.
@@ -214,10 +214,11 @@ No account, package, container, tag, or release was created by these checks.
   wildcard into multiple positional paths before Typer parsed the command.
 - Impact: read-only CLI commands could crash on platforms without native Cairo,
   and otherwise valid batch conversion could be rejected on Windows.
-- Resolution: native Cairo load failures mark the adapter unavailable; convert
-  and batch accept one or more input paths or patterns; path and newline tests
-  are platform-neutral. Actions were advanced to current, full-SHA-pinned
-  Node.js 24 releases after the hosted runner reported Node.js 20 deprecation.
+- Resolution: native Cairo load failures mark the adapter and the `doctor`
+  optional check unavailable without crashing; convert and batch accept one or
+  more input paths or patterns; path and newline tests are platform-neutral.
+  Actions were advanced to current, full-SHA-pinned Node.js 24 releases after
+  the hosted runner reported Node.js 20 deprecation.
 - Regression test: **Required and present.**
 - Status: **Resolved locally; hosted rerun pending.**
 
