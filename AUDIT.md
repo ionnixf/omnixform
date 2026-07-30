@@ -63,6 +63,10 @@ No account, package, container, tag, or release was created by these checks.
 - Container: final no-cache Podman build passed; UID 1000 runtime, help/version,
   Pandoc Markdown-to-DOCX, LibreOffice DOCX-to-PDF, and FFmpeg WAV-to-MP3
   conversions passed.
+- Hosted CI: run
+  `https://github.com/ionnixf/omnixform/actions/runs/30562203149` passed all
+  Linux 3.11–3.14, macOS 3.11, Windows 3.11, external integration, package,
+  and container jobs for commit `1e89fb7832b9b09aa265de708ba9d284e59fbcf3`.
 - Artifacts: archive names and extracted content contain no stale package name,
   temporary media corpus, caches, VCS data, local absolute paths, or detected
   secrets.
@@ -158,7 +162,7 @@ No account, package, container, tag, or release was created by these checks.
   revisions, and PyPI publishing is a separate manual workflow whose publish
   job receives only OIDC `id-token: write`.
 - Regression test: workflow source review and hosted CI.
-- Status: **Resolved in source; hosted execution remains open.**
+- Status: **Resolved in source and confirmed by hosted CI.**
 
 ### AUD-007 — Container build and privilege model
 
@@ -220,7 +224,7 @@ No account, package, container, tag, or release was created by these checks.
   Actions were advanced to current, full-SHA-pinned Node.js 24 releases after
   the hosted runner reported Node.js 20 deprecation.
 - Regression test: **Required and present.**
-- Status: **Resolved locally; hosted rerun pending.**
+- Status: **Resolved and confirmed by hosted CI.**
 
 ### AUD-018 — Temporary `pictures/` corpus
 
@@ -252,7 +256,7 @@ No account, package, container, tag, or release was created by these checks.
 | Dockerfile | Conditional | Local no-cache build and non-root smoke when Podman/Docker is available |
 | PyPI package | Not published | Namespace and artifact checks only |
 | MkDocs documentation | Confirmed locally | Strict build |
-| Linux/macOS/Windows CI | Partially confirmed | Workflow review; hosted runs still required |
+| Linux/macOS/Windows CI | Confirmed for audited source | Hosted run `30562203149` passed every job |
 
 ## Security regression checklist
 
@@ -288,7 +292,7 @@ No account, package, container, tag, or release was created by these checks.
 
 ## Remaining release conditions
 
-1. Obtain green hosted CI on Linux, macOS, and Windows.
+1. Repeat hosted CI on the eventual release commit before creating a tag.
 2. Complete human review of subprocess, path-publication, plugin, workflow, and
    container code.
 3. Configure the PyPI trusted publisher and protected environment.

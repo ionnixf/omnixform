@@ -14,7 +14,8 @@ first public release.
 - [x] No compatibility package or deprecated command was added.
 - [ ] Human review of security-critical subprocess, path, plugin, workflow, and
       container changes.
-- [ ] Hosted CI passes on Linux, macOS, and Windows.
+- [ ] Reconfirm hosted CI on Linux, macOS, and Windows for the exact release
+      commit (audit run `30562203149` passed for the reviewed source).
 
 ## Local verification
 
